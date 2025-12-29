@@ -23,6 +23,9 @@ public class ProductServiceImpl implements ProductService {
         this.kafkaTemplate=kafkaTemplate;
     }
 
+
+    //to make this code synchronous ==> there is one hint , future.join() ==> addition makes
+
     @Override
     public String createProduct(CreateProductRequestDto dto) {
         String productId = UUID.randomUUID().toString();
@@ -41,6 +44,9 @@ public class ProductServiceImpl implements ProductService {
                 LOGGER.info("Message sent successfully: "+result.getRecordMetadata());
             }
         });
+
+        // the thread will wait until this line until the completable future completes
+        future.join();
         return productId;
     }
 }
