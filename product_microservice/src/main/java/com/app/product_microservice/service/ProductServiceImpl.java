@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import org. slf4j. Logger;
 
 
@@ -27,7 +29,7 @@ public class ProductServiceImpl implements ProductService {
     //to make this code synchronous ==> there is one hint , future.join() ==> addition makes
 
     @Override
-    public String createProduct(CreateProductRequestDto dto) {
+    public String createProduct(CreateProductRequestDto dto) throws ExecutionException, InterruptedException {
         String productId = UUID.randomUUID().toString();
         ProductCreatedEvent productCreatedEvent = ProductCreatedEvent
                 .builder()
@@ -36,7 +38,7 @@ public class ProductServiceImpl implements ProductService {
                 .quantity(dto.getQuantity())
                 .title(dto.getTitle())
                 .build();
-       CompletableFuture<SendResult<String,ProductCreatedEvent>> future =  kafkaTemplate.send("products-event-topic",productId,productCreatedEvent);
+       /*CompletableFuture<SendResult<String,ProductCreatedEvent>> future =  kafkaTemplate.send("products-event-topic",productId,productCreatedEvent);
         future.whenComplete((result,exception)->{
             if(exception !=null) {
                 LOGGER.error("Failed to send message : "+exception.getMessage());
@@ -46,7 +48,20 @@ public class ProductServiceImpl implements ProductService {
         });
 
         // the thread will wait until this line until the completable future completes
-        future.join();
+        future.join();*/
+
+
+        //to make this method wait until it receives ack from kafka broker
+        //call a get method on it
+        //the main advantage from sending messages synchronously
+        // , is that we can wait for ACK from kafka brokers that the message is successfully stored in kafka topic
+
+            SendResult<String,ProductCreatedEvent> result =
+                    kafkaTemplate.send("products-event-topic",productId,productCreatedEvent).get();
+            LOGGER.info("partition"+result.getRecordMetadata().partition());
+            LOGGER.info("topic"+result.getRecordMetadata().topic());
+            LOGGER.info("offset"+result.getRecordMetadata().offset());
+
         return productId;
     }
 }
