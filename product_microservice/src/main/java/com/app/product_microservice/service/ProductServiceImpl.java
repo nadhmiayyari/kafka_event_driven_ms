@@ -1,5 +1,6 @@
 package com.app.product_microservice.service;
 
+import com.app.core.ProductCreatedEvent;
 import com.app.product_microservice.dto.CreateProductRequestDto;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -7,10 +8,9 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import org. slf4j. Logger;
+import org. slf4j.Logger;
 
 
 @Service
@@ -31,13 +31,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public String createProduct(CreateProductRequestDto dto) throws ExecutionException, InterruptedException {
         String productId = UUID.randomUUID().toString();
-        ProductCreatedEvent productCreatedEvent = ProductCreatedEvent
-                .builder()
-                .productId(productId)
-                .price(dto.getPrice())
-                .quantity(dto.getQuantity())
-                .title(dto.getTitle())
-                .build();
+        ProductCreatedEvent productCreatedEvent = new ProductCreatedEvent(dto.getTitle(),dto.getPrice(),
+                productId,dto.getQuantity() );
+
        /*CompletableFuture<SendResult<String,ProductCreatedEvent>> future =  kafkaTemplate.send("products-event-topic",productId,productCreatedEvent);
         future.whenComplete((result,exception)->{
             if(exception !=null) {
