@@ -31,7 +31,7 @@ ty "parse.key=true"  --property "key.separator=:"
 
 >test
 org.apache.kafka.common.KafkaException: No key separator found on line number 1: 'test'
-at kafka.tools.ConsoleProducer$LineMessageReader.parse(ConsoleProducer.scala:381)
+at kafka.tools.ConsoleProducer$LineMessageReader.parse(ConsoleProducer.scala: 381)
 at kafka.tools.ConsoleProducer$LineMessageReader.readMessage(ConsoleProducer.scala:356)
 at kafka.tools.ConsoleProducer$.main(ConsoleProducer.scala:50)
 at kafka.tools.ConsoleProducer.main(ConsoleProducer.scala) 

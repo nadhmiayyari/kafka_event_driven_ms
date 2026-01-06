@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="core" />
+        <module name="mockservice" />
       </profile>
       <profile name="Annotation profile for product_microservice" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -31,6 +32,7 @@
       <module name="core" options="-parameters" />
       <module name="demo" options="-parameters" />
       <module name="emailNotificationMs" options="-parameters" />
+      <module name="mockservice" options="-parameters" />
       <module name="product_microservice" options="-parameters" />
     </option>
   </component>

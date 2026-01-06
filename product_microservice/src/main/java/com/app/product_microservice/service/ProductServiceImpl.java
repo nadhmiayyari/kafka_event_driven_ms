@@ -2,6 +2,7 @@ package com.app.product_microservice.service;
 
 import com.app.core.ProductCreatedEvent;
 import com.app.product_microservice.dto.CreateProductRequestDto;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -51,9 +52,11 @@ public class ProductServiceImpl implements ProductService {
         //call a get method on it
         //the main advantage from sending messages synchronously
         // , is that we can wait for ACK from kafka brokers that the message is successfully stored in kafka topic
+        ProducerRecord<String,ProductCreatedEvent> record =  new ProducerRecord<>("products-event-topic",productId,productCreatedEvent);
+        record.headers().add("messageId", UUID.randomUUID().toString().getBytes());
+        SendResult<String,ProductCreatedEvent> result =
+                    kafkaTemplate.send(record).get();
 
-            SendResult<String,ProductCreatedEvent> result =
-                    kafkaTemplate.send("products-event-topic",productId,productCreatedEvent).get();
             LOGGER.info("partition"+result.getRecordMetadata().partition());
             LOGGER.info("topic"+result.getRecordMetadata().topic());
             LOGGER.info("offset"+result.getRecordMetadata().offset());

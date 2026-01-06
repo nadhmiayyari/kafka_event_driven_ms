@@ -9,6 +9,7 @@
         <option value="$PROJECT_DIR$/emailNotificationMs/pom.xml" />
         <option value="$PROJECT_DIR$/core/pom.xml" />
         <option value="$PROJECT_DIR$/shared/pom.xml" />
+        <option value="$PROJECT_DIR$/mockservice/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
