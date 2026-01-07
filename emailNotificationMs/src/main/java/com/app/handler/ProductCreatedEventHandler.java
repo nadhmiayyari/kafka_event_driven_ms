@@ -32,11 +32,12 @@ public class ProductCreatedEventHandler {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    private ProcessedEventRepository processedEventRepository;
+    private final ProcessedEventRepository processedEventRepository;
 
     private final RestTemplate restTemplate;
 
-    public ProductCreatedEventHandler(RestTemplate restTemplate) {
+    public ProductCreatedEventHandler(ProcessedEventRepository processedEventRepository, RestTemplate restTemplate) {
+        this.processedEventRepository = processedEventRepository;
         this.restTemplate = restTemplate;
     }
     // provide the topic name here
@@ -56,7 +57,10 @@ public class ProductCreatedEventHandler {
         LOGGER.info("received a new event :" + productCreatedEvent.getProductId());
 
         String url = "http://localhost:8088/response/200";
-
+        ProcessedEventEntity entity = processedEventRepository.findProcessedEventEntityByMessageId(messageId);
+        if(entity!=null){
+            LOGGER.info("found a duplicate message id : {}",entity.getMessageId());
+        }
         try {
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
             if (response.getStatusCode().value() == HttpStatus.OK.value()) {

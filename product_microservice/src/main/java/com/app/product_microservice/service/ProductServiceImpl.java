@@ -52,8 +52,11 @@ public class ProductServiceImpl implements ProductService {
         //call a get method on it
         //the main advantage from sending messages synchronously
         // , is that we can wait for ACK from kafka brokers that the message is successfully stored in kafka topic
-        ProducerRecord<String,ProductCreatedEvent> record =  new ProducerRecord<>("products-event-topic",productId,productCreatedEvent);
+        ProducerRecord<String,ProductCreatedEvent> record =  new ProducerRecord<>("products-event-topic",
+                productId,productCreatedEvent);
+
         record.headers().add("messageId", UUID.randomUUID().toString().getBytes());
+
         SendResult<String,ProductCreatedEvent> result =
                     kafkaTemplate.send(record).get();
 
