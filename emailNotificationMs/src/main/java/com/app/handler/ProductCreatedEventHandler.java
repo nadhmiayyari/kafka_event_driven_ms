@@ -11,7 +11,10 @@ import org.slf4j.LoggerFactory;
  import org.springframework.http.ResponseEntity;
  import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
+ import org.springframework.kafka.support.KafkaHeaders;
+ import org.springframework.messaging.handler.annotation.Header;
+ import org.springframework.messaging.handler.annotation.Payload;
+ import org.springframework.stereotype.Component;
  import org.springframework.web.client.HttpServerErrorException;
  import org.springframework.web.client.ResourceAccessException;
  import org.springframework.web.client.RestTemplate;
@@ -35,8 +38,14 @@ public class ProductCreatedEventHandler {
     // for handling events from different classes here , we can defio,e the kafkaListener Annotation above the class name
     // each method needs to be annotated with the @KafkaHandler annotation
 
+    //message id and message key are read from the message headers , and to tell kafka handfler that productCreatedEvbent will be a payload
+    // we can use the @payload annotation therefore
+
+    //required is true by default
     @KafkaHandler
-    public void handle(ProductCreatedEvent productCreatedEvent){
+    public void handle(@Payload ProductCreatedEvent productCreatedEvent,
+                       @Header(value="messageId",required = false) String messageId,
+                       @Header(KafkaHeaders.RECEIVED_KEY) String messageKey){
        // if(true) throw new NotRetryableException("an error took place , no need to conusme this message again . ");
         LOGGER.info("received a new event :" + productCreatedEvent.getTitle());
         LOGGER.info("received a new event :" + productCreatedEvent.getProductId());
