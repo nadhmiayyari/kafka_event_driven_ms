@@ -7,8 +7,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="deposit-service" />
+        <module name="withdrawal-service" />
         <module name="core" />
         <module name="mockservice" />
+        <module name="transfer-microservice" />
+        <module name="payment-core" />
       </profile>
       <profile name="Annotation profile for product_microservice" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -39,9 +43,13 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="core" options="-parameters" />
       <module name="demo" options="-parameters" />
+      <module name="deposit-service" options="-parameters" />
       <module name="emailNotificationMs" options="-parameters" />
       <module name="mockservice" options="-parameters" />
+      <module name="payment-core" options="-parameters" />
       <module name="product_microservice" options="-parameters" />
+      <module name="transfer-microservice" options="-parameters" />
+      <module name="withdrawal-service" options="-parameters" />
     </option>
   </component>
 </project>
