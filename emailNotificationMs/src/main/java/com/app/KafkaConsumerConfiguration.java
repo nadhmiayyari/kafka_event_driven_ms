@@ -47,7 +47,7 @@ public class KafkaConsumerConfiguration {
     }
 
     //kafka listener container will be responsible for receiving messages from kafka topic and invoking the handler method
-    // this is used to make kjafka listeener object
+    // this is used to make kafka listener object
     // kafka listener container object is a component that interacts with kafka cluster to receive messages
 
     @Bean
@@ -64,6 +64,7 @@ public class KafkaConsumerConfiguration {
                 ,new FixedBackOff(5000,3));
         errorHandler.addNotRetryableExceptions(NotRetryableException.class, HttpServerErrorException.class);
         errorHandler.addNotRetryableExceptions(RetryableException.class);
+
         ConcurrentKafkaListenerContainerFactory<String,Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setCommonErrorHandler(errorHandler);
