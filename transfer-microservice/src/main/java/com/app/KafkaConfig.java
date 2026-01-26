@@ -15,6 +15,7 @@ import org.springframework.kafka.transaction.KafkaTransactionManager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Configuration
 public class KafkaConfig {
@@ -56,7 +57,7 @@ public class KafkaConfig {
 	@Value("${spring.kafka.producer.transaction-id-prefix}")
 	private String transactionPrefix;
 
-	public Map<String, Object> producerConfigs() {
+	public Map<String, Object> producerConfigs(String transactionIdPrefix) {
 		Map<String, Object> props = new HashMap<>();
 		props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer);
@@ -65,32 +66,36 @@ public class KafkaConfig {
 		props.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, deliveryTimeout);
 		props.put(ProducerConfig.LINGER_MS_CONFIG, linger);
 		props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, requestTimeout);
-
 		props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, idempotence);
 		props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, inflightRequests);
-		props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, transactionPrefix);
+		props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, transactionIdPrefix);
 
 		return props;
 	}
 
-	@Bean
+	 @Bean
 	ProducerFactory<String, Object> producerFactory() {
-		DefaultKafkaProducerFactory<String, Object> factory = new DefaultKafkaProducerFactory<>(producerConfigs());
-		factory.setTransactionIdPrefix(transactionPrefix);
-		return factory;
+		 String transactionIdPrefix = "transfer-service--" + UUID.randomUUID();
+		 return new DefaultKafkaProducerFactory<>(producerConfigs(transactionIdPrefix));
+
  	}
 
 
-	//for kafka template we can set new Kafka Template using producerFactory bean
+	 // this used to be llike this but , as we want to execute with the same producerFactory ==> we would like to inject Porudcer Factory
+	// in the kafka template
+	//@Bean
+	//public KafkaTemplate<String, Object> kafkaTemplate() {
+	//	return new KafkaTemplate<>(producerFactory());
+	//}
+
 	@Bean
-	KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory) {
-		return new KafkaTemplate<>(producerFactory);
+	public KafkaTransactionManager<String, Object> kafkaTransactionManager(ProducerFactory<String, Object> producerFactory) {
+		return new KafkaTransactionManager<>(producerFactory);
 	}
 
-
 	@Bean
-	KafkaTransactionManager<String,Object> kafkaTransactionManager(ProducerFactory<String, Object> producerFactory){
-		return new KafkaTransactionManager<>(producerFactory);
+	public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory) {
+		return new KafkaTemplate<>(producerFactory);
 	}
 
 	@Bean

@@ -1,8 +1,5 @@
 package com.app;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.app.error.NotRetryableException;
 import com.app.error.RetryableException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -14,17 +11,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.FixedBackOff;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class KafkaConsumerConfiguration {
@@ -44,8 +40,7 @@ public class KafkaConsumerConfiguration {
 		config.put(ConsumerConfig.GROUP_ID_CONFIG, environment.getProperty("spring.kafka.consumer.group-id"));
 		config.put(JsonDeserializer.TRUSTED_PACKAGES,
 				environment.getProperty("spring.kafka.consumer.properties.spring.json.trusted.packages"));
-		config.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG,	environment.getProperty("spring.kafka.consumer.isolation-level") );
-
+		config.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG,environment.getProperty("spring.kafka.consumer.isolation-level"));
 		return new DefaultKafkaConsumerFactory<>(config);
 	}
 

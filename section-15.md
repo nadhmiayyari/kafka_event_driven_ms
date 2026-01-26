@@ -56,5 +56,12 @@ spring.kafka.producer.transaction-id-prefix=
 
 when we use this property , spring framework will create and configure  kafka transaction manager for us automatically 
 
+by default it rolls back transactions for unchecked exceptions and for errors .
 
-by default it rolls back transactiond for unchecked exceptions and for errors 
+
+#### 121 - reading committed messages in kafka consumer 
+
+in kafka consumer we can read committed transactions using this property : 
+spring.kafka.consumer.isolation-level= read_committed | read uncommitted
+
+ConsumerConfig.ISOLATION_LEVEL_CONFIG, environment.getProperty("spring.kafka.consumer.isolation-level") 

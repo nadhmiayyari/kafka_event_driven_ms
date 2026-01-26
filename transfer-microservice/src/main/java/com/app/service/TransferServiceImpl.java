@@ -8,12 +8,15 @@ import com.app.events.WithdrawalRequestedEvent;
 import com.app.model.TransferRestModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,16 +29,34 @@ public class TransferServiceImpl implements TransferService {
 	private KafkaTemplate<String, Object> kafkaTemplate;
 	private Environment environment;
 	private RestTemplate restTemplate;
+	@Autowired
+	private PlatformTransactionManager kafkaTransactionManager;
 
 	public TransferServiceImpl(KafkaTemplate<String, Object> kafkaTemplate, Environment environment,
-			RestTemplate restTemplate) {
+							   RestTemplate restTemplate) {
 		this.kafkaTemplate = kafkaTemplate;
 		this.environment = environment;
 		this.restTemplate = restTemplate;
 	}
 
+
+    //kafkaTemplate.executeInTransaction(t -> {
+    //				t.send(environment.getProperty("withdraw-money-topic", "withdraw-money-topic"), withdrawalEvent);
+    //				LOGGER.info("Sent event to withdrawal topic.");
+    //				// Simulate business logic that may cause an error
+    //                try {
+    //                    callRemoteService();
+    //                } catch (Exception ex) {
+    //					LOGGER.error(ex.getMessage(), ex);
+    //					throw new TransferServiceException(ex);
+    //                }
+    //                t.send(environment.getProperty("deposit-money-topic", "deposit-money-topic"), depositEvent);
+    //				LOGGER.info("Sent event to deposit topic.");
+    //				return null;
+    //			});
+
 	@Override
-	@Transactional(value="kafkaTransactionManager")
+	@Transactional(value="kafkaTransactionManager",rollbackFor = {TransferServiceException.class, ConnectException.class})
 	//rollbackFor = {TransferServiceException.class, ConnectException.class}
 	//if you have only one transaction manager object , spring framework will find it and it will use it to
 	//manage kafka transactions
@@ -44,27 +65,26 @@ public class TransferServiceImpl implements TransferService {
 				transferRestModel.getRecepientId(), transferRestModel.getAmount());
 		DepositRequestedEvent depositEvent = new DepositRequestedEvent(transferRestModel.getSenderId(),
 				transferRestModel.getRecepientId(), transferRestModel.getAmount());
+        try {
+            kafkaTemplate.send(environment.getProperty("withdraw-money-topic", "withdraw-money-topic"),
+                    withdrawalEvent);
+            LOGGER.info("Sent event to withdrawal topic.");
 
-		try {
-			kafkaTemplate.send(environment.getProperty("withdraw-money-topic", "withdraw-money-topic"),
-					withdrawalEvent);
-			LOGGER.info("Sent event to withdrawal topic.");
+            // Business logic that causes and error
+            callRemoteService();
 
-			// Business logic that causes and error
-			callRemoteServce();
+            kafkaTemplate.send(environment.getProperty("deposit-money-topic", "deposit-money-topic"), depositEvent);
+            LOGGER.info("Sent event to deposit topic");
 
-			kafkaTemplate.send(environment.getProperty("deposit-money-topic", "deposit-money-topic"), depositEvent);
-			LOGGER.info("Sent event to deposit topic");
-
-		} catch (Exception ex) {
-			LOGGER.error(ex.getMessage(), ex);
-			throw new TransferServiceException(ex);
-		}
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            throw new TransferServiceException(ex);
+        }
 
 		return true;
-	}
+		}
 
-	private ResponseEntity<String> callRemoteServce() throws Exception {
+	private ResponseEntity<String> callRemoteService() throws Exception {
 		String requestUrl = "http://localhost:8088/response/200";
 		ResponseEntity<String> response = restTemplate.exchange(requestUrl, HttpMethod.GET, null, String.class);
 
